@@ -63,7 +63,13 @@ def user_login(request):
 
         if user is not None:
             login(request, user)
-            return JsonResponse({'success': 'User logged in successfully'}, status=200)
+            session_key = request.session.session_key
+            return JsonResponse({
+                'success': 'User logged in successfully',
+                'user_id': user.id,
+                'session_key': session_key},
+                status=200
+            )
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
     else:
