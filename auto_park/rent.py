@@ -65,7 +65,7 @@ def rent_car(request, auto_park_slug, car_id):
         return JsonResponse({'error': 'Car does not belong to the specified auto park'}, status=400)
 
     try:
-        session_key = request.session.session_key
+        session_key = request.headers.get('X-Session-Key', request.session.session_key)
         session = Session.objects.get(session_key=session_key)
         user_id = session.get_decoded().get('_auth_user_id')
         user = CustomUser.objects.get(pk=user_id)
