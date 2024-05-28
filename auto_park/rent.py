@@ -56,9 +56,6 @@ def rent_car(request, auto_park_slug, car_id):
     except AutoParkCar.DoesNotExist:
         return JsonResponse({'error': 'Car object does not exist'}, status=404)
 
-    if car.is_rented:
-        return JsonResponse({'error': 'Car is already rented'}, status=400)
-
     try:
         auto_park = AutoPark.objects.get(slug=auto_park_slug)
     except AutoPark.DoesNotExist:
@@ -99,20 +96,25 @@ def rent_car(request, auto_park_slug, car_id):
     except ValueError:
         return JsonResponse({'error': 'Invalid expected return date format, should be YYYY-MM-DD'}, status=400)
 
-    # if expected_return_date < timezone.now().date():
-    #     return JsonResponse({'error': 'Expected return date must be in the future'}, status=400)
+    if expected_return_date < timezone.now().date():
+        return JsonResponse({'error': 'Expected return date must be in the future'}, status=400)
 
-    rent = Rent.objects.create(
-        user=user,
-        car=car.car,
-        auto_park=auto_park,
-        rental_date=rental_date,
-        expected_return_date=expected_return_date,
-        deposit_amount=deposit_amount,
-    )
-    rent.calculate_rental_cost()
+    active_rents = Rent.objects.filter(user=user, car=car.car, return_date__isnull=True)
+    if active_rents.exists():
+        return JsonResponse({'error': 'You already have an active rent for this car'}, status=400)
 
-    car.save()
+    with transaction.atomic():
+        car.save()
+
+        rent = Rent.objects.create(
+            user=user,
+            car=car.car,
+            auto_park=auto_park,
+            rental_date=rental_date,
+            expected_return_date=expected_return_date,
+            deposit_amount=deposit_amount,
+        )
+        rent.calculate_rental_cost()
 
     return JsonResponse({'success': 'Car rented successfully'}, status=201)
 
