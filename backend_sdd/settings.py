@@ -120,4 +120,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'X-Session-Key',
+]
+
 CORS_ALLOW_ALL_ORIGINS = True

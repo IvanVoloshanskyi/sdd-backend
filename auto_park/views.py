@@ -1,12 +1,21 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.sessions.models import Session
+from django.http import JsonResponse
 
 from auto_park.models import AutoPark, AutoParkCar
+from auto_park.car_report import CarAvailabilityReport, CarFinancialReport
 
 
 @api_view(['GET'])
 def get_all_auto_park_cars(request, auto_park_slug):
+    try:
+        session_key = request.headers.get('X-Session-Key', request.session.session_key)
+        session = Session.objects.get(session_key=session_key)  
+    except Session.DoesNotExist:    
+        return JsonResponse({'error': 'Session object does not exist'}, status=404)
+
     auto_park = get_object_or_404(AutoPark, slug=auto_park_slug)
     all_cars = AutoParkCar.objects.filter(auto_park=auto_park).select_related(
         'car__car_brand',
@@ -87,3 +96,25 @@ def get_all_unrented_cars(request, auto_park_slug):
         auto_park_data['cars'].append(car_data)
 
     return Response(auto_park_data)
+
+
+@api_view(['GET'])
+def car_availability_report(request, auto_park_slug):
+    try:
+        session_key = request.headers.get('X-Session-Key', request.session.session_key)
+        session = Session.objects.get(session_key=session_key)  
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session object does not exist'}, status=404)
+    
+    return CarAvailabilityReport().generate_report(auto_park_slug)
+
+
+@api_view(['GET'])
+def car_financial_report(request, auto_park_slug):
+    try:
+        session_key = request.headers.get('X-Session-Key', request.session.session_key)
+        session = Session.objects.get(session_key=session_key)  
+    except Session.DoesNotExist:
+        return JsonResponse({'error': 'Session object does not exist'}, status=404)
+    
+    return CarFinancialReport().generate_report(auto_park_slug)

@@ -1,6 +1,6 @@
 from django.urls import path
-from auto_park.views import get_all_auto_park_cars, car_detail, get_all_unrented_cars
-from auto_park.rent import rent_car, return_car, car_availability_report, car_financial_report, get_user_rent_list
+from auto_park.views import get_all_auto_park_cars, car_detail, get_all_unrented_cars, car_availability_report, car_financial_report
+from auto_park.rent import rent_car, return_car, get_user_rent_list
 
 urlpatterns = [
     path('auto-park-list/<slug:auto_park_slug>/', get_all_auto_park_cars, name='auto_park_list'),
