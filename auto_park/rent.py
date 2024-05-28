@@ -56,9 +56,6 @@ def rent_car(request, auto_park_slug, car_id):
     except AutoParkCar.DoesNotExist:
         return JsonResponse({'error': 'Car object does not exist'}, status=404)
 
-    if car.is_rented:
-        return JsonResponse({'error': 'Car is already rented'}, status=400)
-
     try:
         auto_park = AutoPark.objects.get(slug=auto_park_slug)
     except AutoPark.DoesNotExist:
